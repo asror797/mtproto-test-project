@@ -37,5 +37,96 @@ module.exports = {
       resize_keyboard: true
     },
     parse_mode: 'HTML'
+  },
+  RegionsKeyboard: {
+    reply_markup: {
+      keyboard: [
+        [
+          {
+            text: "Наманган"
+          },
+          {
+            text: "Андижон"
+          }
+        ],
+        [
+          {
+            text: "Фарғона"
+          },
+          {
+            text: "Қашқадарё"
+          }
+        ],
+        [
+          {
+            text: "Самарқанд"
+          },
+          {
+            text: "Жиззах"
+          }
+        ],
+        [
+          {
+            text: "Бухоро"
+          },
+          {
+            text: "Сурхондарё"
+          }
+        ],
+        [
+          {
+            text: "Бухоро"
+          },
+          {
+            text: "Сурхондарё"
+          }
+        ]
+      ],
+      resize_keyboard: true
+    },
+    parse_mode: 'HTML'
+  },
+  DistrictKeyboard: {
+    reply_markup: {
+      keyboard: [
+        [
+          {
+            text: ""
+          }
+        ]
+      ],
+      resize_keyboard: true
+    },
+    parse_mode: 'HTML'
+  },
+  CleanKeyboard: {
+    reply_markup: {
+      remove_keyboard: true
+    },
+    parse_mode: 'HTML'
+  },
+  AutoKeyboard: {
+    reply_markup: {
+      keyboard: [
+        [
+          {
+            text: "Cobalt"
+          },
+          {
+            text: "Jentra"
+          }
+        ],
+        [
+          {
+            text: "Lacetti"
+          },
+          {
+            text: "Epica"
+          }
+        ]
+      ],
+      resize_keyboard: true
+    },
+    parse_mode: 'HTML'
   }
 }

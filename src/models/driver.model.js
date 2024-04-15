@@ -14,7 +14,19 @@ const driverSchema = new Schema(
     telegram_id: {
       type: Number,
       required: true
-    }
+    },
+    auto: {
+      type: String,
+      default: '-'
+    },
+    region: {
+      type: Number,
+      default: 0
+    },
+    district: {
+      type: Number,
+      default: 0
+    },
   },
   {
     versionKey: false,

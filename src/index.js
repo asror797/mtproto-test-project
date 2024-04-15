@@ -1,7 +1,12 @@
 const TelegramBot = require("node-telegram-bot-api");
-const { MainMenuKeyboard, RequestPhoneNumberKeyboard } = require('./utils/bot-keyboard');
+const { MainMenuKeyboard, RequestPhoneNumberKeyboard, CleanKeyboard, AutoKeyboard, } = require('./utils/bot-keyboard');
 const DriverService = require("./services/driver.service");
 const StepService = require("./services/step.service");
+const RegionService = require("./services/region.service");
+const DistrictService = require("./services/district.service");
+const botSteps = require("./constants/bot.steps");
+const botTexts = require("./utils/bot-texts");
+
 // const token  = '6409351590:AAHcPgNxZupAoHPH_1SHlN-IjPEB8CxUiKY'
 const token = '6731749343:AAF-RpsU4y9JmUV3QGh5QKgjK1-151wfEts'
 
@@ -12,6 +17,8 @@ class Bot {
 
   #driverService = new DriverService()
   #stepService = new StepService()
+  #regionService = new RegionService()
+  #districtService = new DistrictService()
 
   constructor() {
     this.bot = new TelegramBot(token, { polling: true })
@@ -27,28 +34,88 @@ class Bot {
 
   async handleMessage(msg) {
     if (msg.chat.type === 'private') {
-      const user_telegram_id = msg.chat.id
-      const user_command = msg.text
-
-      const data = await this.#driverService.checkDriver(user_telegram_id)
-      if (!data.is_exist) {
-        this.bot.sendMessage(user_telegram_id, 'Royxatdan oting', RequestPhoneNumberKeyboard)
-      } else {
-        const userStep = await this.#stepService.getStep(user_telegram_id)
-
-        if(userStep == '') {
-          console.log("ok")
-        }
-      }
+      await this.handlePrivateChat(msg)
     }
   }
 
-  handlePrivateChat(msg) {
-    const userId = msg.chat.id
-    this.bot.sendMessage(userId, 'salom', MainMenuKeyboard)
+  async handlePrivateChat(msg) {
+    const user_telegram_id = msg.chat.id
+    const user_command = msg.text
+    const user_contact = msg.contact
 
-    if (msg.text == '/start') {
-      this.bot.sendMessage(userId, 'salom', RequestPhoneNumberKeyboard)
+    const userStep = await this.#stepService.getStep(user_telegram_id)
+    const data = await this.#driverService.checkDriver(user_telegram_id)
+    console.log(userStep)
+
+    if (user_contact && userStep === botSteps.registerDriverMenu && !data.is_exist) {
+      await this.#driverService.driverCreate({
+        first_name: msg.chat.first_name,
+        last_name: msg.chat.last_name ? msg.chat.last_name : '',
+        telegram_id: user_telegram_id,
+        phone_number: user_contact.phone_number
+      })
+
+      await this.#stepService.editStep(user_telegram_id, botSteps.enterFullName)
+      this.bot.sendMessage(user_telegram_id, botTexts.EnterFullName, CleanKeyboard)
+    }
+
+    if (!data.is_exist && !userStep) {
+      await this.#stepService.editStep(user_telegram_id, botSteps.registerDriverMenu)
+      this.bot.sendMessage(user_telegram_id, botTexts.AskAuth, RequestPhoneNumberKeyboard)
+    } else {
+
+      if(userStep === botSteps.mainMenu) {
+
+      }
+
+      if(userStep === botSteps.enterFullName) {
+        await this.#driverService.driverUpdate({
+          telegram_id: user_telegram_id,
+          fullname: user_command
+        })
+
+        await this.#stepService.editStep(user_telegram_id, botSteps.enterRegion)
+        this.bot.sendMessage(user_telegram_id, botTexts.AskRegion, await this.#regionKeyboardMaker())
+      }
+
+      if(userStep === botSteps.enterRegion) {
+        const region = await this.#regionService.regionRetrieveOne(user_command)
+        console.log(region)
+        await this.#driverService.driverUpdate({
+          telegram_id: user_telegram_id,
+          region: region.id
+        })
+
+        await this.#stepService.editStep(user_telegram_id, botSteps.enterDistrict)
+        this.bot.sendMessage(user_telegram_id, botTexts.AskDistrict, await this.#districtKeyboardMaker(region.id))
+      }
+
+      if(userStep === botSteps.enterDistrict) {
+        const district = await this.#districtService.districtRetrieveOne(user_command)
+        await this.#driverService.driverUpdate({
+          telegram_id: user_telegram_id,
+          district: district ? district.id : 0
+        })
+
+        await this.#stepService.editStep(user_telegram_id, botSteps.enterAuto)
+        this.bot.sendMessage(user_telegram_id, botTexts.AskAuto, AutoKeyboard)
+      }
+
+      if(userStep == botSteps.enterAuto) {
+        await this.#driverService.driverUpdate({
+          telegram_id: user_telegram_id,
+          auto: user_command
+        })
+
+        await this.#stepService.editStep(user_telegram_id, botSteps.mainMenu)
+        this.bot.sendMessage(user_telegram_id, botTexts.Profile, MainMenuKeyboard)
+      }
+
+      if(userStep === botSteps.mainMenu) {
+        if (user_command === botTexts.Profile) {
+          this.bot.sendMessage(user_telegram_id,`<b>Driver</b>: ${data.driver.fullname}\n<b>Automobil</b>:${data.driver.auto}\n<b>Phone</b>:${data.driver.phone_number}`, { parse_mode: 'HTML'})
+        }
+      }
     }
   }
 
@@ -62,6 +129,60 @@ class Bot {
     } catch (error) {
       console.log(error)
     }
+  }
+
+  async #regionKeyboardMaker() {
+    const regions = await this.#regionService.regionRetrieveAll()
+
+    const KeyboardArray = []
+    let keyboardLine = []
+
+    regions.map((e) => {
+      if (keyboardLine.length == 2) {
+        KeyboardArray.push(keyboardLine)
+        keyboardLine = [ { text: e.name_oz } ]
+      } else {
+        keyboardLine.push({
+          text: e.name_oz
+        })
+      }
+    })
+
+    return {
+      reply_markup: {
+        keyboard: KeyboardArray,
+        resize_keyboard: true
+      },
+      parse_mode: 'HTML'
+    }
+    
+  }
+
+  async #districtKeyboardMaker(name) {
+    const regions = await this.#districtService.districtRetrieveAll(name)
+
+    const KeyboardArray = []
+    let keyboardLine = []
+
+    regions.map((e) => {
+      if (keyboardLine.length == 2) {
+        KeyboardArray.push(keyboardLine)
+        keyboardLine = [ { text: e.name_oz } ]
+      } else {
+        keyboardLine.push({
+          text: e.name_oz
+        })
+      }
+    })
+
+    return {
+      reply_markup: {
+        keyboard: KeyboardArray,
+        resize_keyboard: true
+      },
+      parse_mode: 'HTML'
+    }
+    
   }
 }
 
