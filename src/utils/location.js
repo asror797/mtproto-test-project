@@ -1,76 +1,61 @@
 const regions = [
   {
     id: 1,
-    name_uz: "Toshkent",
-    name_oz: "Тошкент"
+    name: "Тошкент"
   },
   {
     id: 2,
-    name_uz: "Andijon viloyati",
-    name_oz: "Андижон вилояти"
+    name: "Андижон"
   },
   {
     id: 3,
-    name_uz: "Buxoro viloyati",
-    name_oz: "Бухоро вилояти"
+    name: "Наманган"
   },
   {
     id: 4,
-    name_uz: "Jizzax viloyati",
-    name_oz: "Жиззах вилояти"
+    name: "Фарғона"
   },
   {
     id: 5,
-    name_uz: "Qashqadaryo viloyati",
-    name_oz: "Қашқадарё вилояти"
+    name: "Қашқадарё"
   },
   {
     id: 6,
-    name_uz: "Navoiy viloyati",
-    name_oz: "Навоий вилояти"
+    name_oz: "Самарқанд"
   },
   {
     id: 7,
-    name_uz: "Namangan viloyati",
-    name_oz: "Наманган вилояти"
+    name: "Бухоро"
   },
   {
     id: 8,
-    name_uz: "Samarqand viloyati",
-    name_oz: "Самарқанд вилояти"
+    name: "Навоий"
   },
   {
     id: 9,
-    name_uz: "Surxandaryo viloyati",
-    name_oz: "Сурхондарё вилояти"
+    name: "Сурхондарё"
   },
   {
     id: 10,
-    name_uz: "Sirdaryo viloyati",
-    name_oz: "Сирдарё вилояти"
+    name: "Сирдарё"
   },
   {
     id: 11,
-    name_uz: "Toshkent viloyati",
-    name_oz: "Тошкент вилояти"
+    name: "Тошкент вилояти"
   },
   {
     id: 12,
-    name_uz: "Farg‘ona viloyati",
-    name_oz: "Фарғона вилояти"
+    name: "Жиззах"
   },
   {
     id: 13,
-    name_uz: "Xorazm viloyati",
-    name_oz: "Хоразм вилояти"
+    name: "Хоразм"
   },
   {
     id: 14,
-    name_uz: "Toshkent shahri",
     name_oz: "Тошкент шаҳри"
   }
-];
-
+]
 
 module.exports = {
   regions: regions,

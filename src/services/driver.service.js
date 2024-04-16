@@ -4,16 +4,23 @@ class DriverService {
   drivers = drivers
 
   async driverRetrieveAll(payload) {
-    const driverList = await this.drivers.find().exec()
+    const driverList = await this.drivers.find().select('-updatedAt').exec()
 
+    const driverCount = await this.drivers.countDocuments().exec()
 
-    return driverList
+    return {
+      count: driverCount,
+      driverList: driverList
+    }
   }
 
   async checkDriver(telegram_id) {
-    const driver = await this.drivers.findOne({
-      telegram_id: telegram_id
-    })
+    const driver = await this.drivers
+      .findOne({
+        telegram_id: telegram_id
+      })
+      .select('-createdAt -updatedAt')
+      .exec()
 
     return {
       driver,
@@ -29,20 +36,11 @@ class DriverService {
       telegram_id: payload.telegram_id,
       phone_number: payload.phone_number
     })
-
     return driver
   }
 
   async driverUpdate(payload) {
     let updateObj = {}
-
-    if (payload.phone_number) {
-      updateObj.phone_number = payload.phone_number
-    }
-
-    if (payload.fullname) {
-      updateObj.fullname = payload.fullname
-    }
 
     if (payload.region) {
       updateObj.region = payload.region
@@ -55,6 +53,15 @@ class DriverService {
     if (payload.auto) {
       updateObj.auto = payload.auto
     }
+
+    if (payload.phone_number) {
+      updateObj.phone_number = payload.phone_number
+    }
+
+    if (payload.fullname) {
+      updateObj.fullname = payload.fullname
+    }
+
 
     await this.drivers.updateOne({
       telegram_id: payload.telegram_id

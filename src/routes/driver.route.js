@@ -12,6 +12,8 @@ class DriverRoute {
 
   initializeRoutes() {
     this.router.get(`${this.path}`, this.driverController.driverRetrieveAll)
+    this.router.patch(`${this.path}/:id`,this.driverController.driverUpdate)
+    this.router.delete(`${this.path}/:id`,this.driverController.driverDelete)
   }
 }
 

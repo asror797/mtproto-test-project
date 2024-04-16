@@ -5,8 +5,23 @@ class DriverController {
 
   driverRetrieveAll = async(req,res,next) => {
     try {
-      console.log(req)
-      res.json("ok")
+      res.json(await this.driverService.driverRetrieveAll())
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  driverUpdate = async(req,res,next) => {
+    try {
+      
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  driverDelete = async(req,res,next) => {
+    try {
+      
     } catch (error) {
       next(error)
     }

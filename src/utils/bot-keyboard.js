@@ -1,7 +1,5 @@
 const { Profile, NewAdSend, Settings, RequestPhoneNumber } = require('./bot-texts')
 
-
-
 module.exports = {
   MainMenuKeyboard: {
     reply_markup: {

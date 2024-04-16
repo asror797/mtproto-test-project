@@ -1,16 +1,18 @@
 const TelegramBot = require("node-telegram-bot-api");
-const { MainMenuKeyboard, RequestPhoneNumberKeyboard, CleanKeyboard, AutoKeyboard, } = require('./utils/bot-keyboard');
-const DriverService = require("./services/driver.service");
-const StepService = require("./services/step.service");
-const RegionService = require("./services/region.service");
-const DistrictService = require("./services/district.service");
-const botSteps = require("./constants/bot.steps");
-const botTexts = require("./utils/bot-texts");
+const { 
+  DriverService,
+  StepService,
+  RegionService,
+  DistrictService
+} = require('./services')
+const { 
+  botSteps, 
+  botKeyboard,
+  botTexts 
+} = require('./utils')
 
-// const token  = '6409351590:AAHcPgNxZupAoHPH_1SHlN-IjPEB8CxUiKY'
-const token = '6731749343:AAF-RpsU4y9JmUV3QGh5QKgjK1-151wfEts'
-
-
+const token  = '6409351590:AAHcPgNxZupAoHPH_1SHlN-IjPEB8CxUiKY'
+// const token = '6731749343:AAF-RpsU4y9JmUV3QGh5QKgjK1-151wfEts'
 
 class Bot {
   static bot
@@ -35,6 +37,9 @@ class Bot {
   async handleMessage(msg) {
     if (msg.chat.type === 'private') {
       await this.handlePrivateChat(msg)
+    } else if (msg.chat.type === 'supergroup') {
+      console.log(msg)
+      this.handleGroupChat(msg)
     }
   }
 
@@ -56,12 +61,12 @@ class Bot {
       })
 
       await this.#stepService.editStep(user_telegram_id, botSteps.enterFullName)
-      this.bot.sendMessage(user_telegram_id, botTexts.EnterFullName, CleanKeyboard)
+      this.bot.sendMessage(user_telegram_id, botTexts.EnterFullName, botKeyboard.CleanKeyboard)
     }
 
     if (!data.is_exist && !userStep) {
       await this.#stepService.editStep(user_telegram_id, botSteps.registerDriverMenu)
-      this.bot.sendMessage(user_telegram_id, botTexts.AskAuth, RequestPhoneNumberKeyboard)
+      this.bot.sendMessage(user_telegram_id, botTexts.AskAuth, botKeyboard.RequestPhoneNumberKeyboard)
     } else {
 
       if(userStep === botSteps.mainMenu) {
@@ -98,30 +103,32 @@ class Bot {
         })
 
         await this.#stepService.editStep(user_telegram_id, botSteps.enterAuto)
-        this.bot.sendMessage(user_telegram_id, botTexts.AskAuto, AutoKeyboard)
+        this.bot.sendMessage(user_telegram_id, botTexts.AskAuto, botKeyboard.AutoKeyboard)
       }
 
-      if(userStep == botSteps.enterAuto) {
+      if(userStep === botSteps.enterAuto) {
         await this.#driverService.driverUpdate({
           telegram_id: user_telegram_id,
           auto: user_command
         })
 
         await this.#stepService.editStep(user_telegram_id, botSteps.mainMenu)
-        this.bot.sendMessage(user_telegram_id, botTexts.Profile, MainMenuKeyboard)
+        this.bot.sendMessage(user_telegram_id, botTexts.Profile, botKeyboard.MainMenuKeyboard)
       }
 
       if(userStep === botSteps.mainMenu) {
         if (user_command === botTexts.Profile) {
+          this.bot.forwardMessage()
           this.bot.sendMessage(user_telegram_id,`<b>Driver</b>: ${data.driver.fullname}\n<b>Automobil</b>:${data.driver.auto}\n<b>Phone</b>:${data.driver.phone_number}`, { parse_mode: 'HTML'})
         }
       }
     }
   }
 
-  handleInlineMessage() {}
-
-  handleInlineQueryMessage() {}
+  async handleGroupChat(msg) {
+    const user_telegram_id = msg.chat.id
+    const user_command = msg.text
+  }
 
   handleMemberUpdateMessage(msg) {
     try {
