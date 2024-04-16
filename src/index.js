@@ -1,3 +1,4 @@
+require('dotenv').config({ path: '.env' })
 const TelegramBot = require("node-telegram-bot-api");
 const { 
   DriverService,
@@ -11,7 +12,11 @@ const {
   botTexts 
 } = require('./utils')
 
-const token  = '6409351590:AAHcPgNxZupAoHPH_1SHlN-IjPEB8CxUiKY'
+const { TOKEN } = process.env
+
+if (!TOKEN) throw new Error("Token Not Found")
+
+// const token  = '6409351590:AAHcPgNxZupAoHPH_1SHlN-IjPEB8CxUiKY'
 // const token = '6731749343:AAF-RpsU4y9JmUV3QGh5QKgjK1-151wfEts'
 
 class Bot {
@@ -23,7 +28,7 @@ class Bot {
   #districtService = new DistrictService()
 
   constructor() {
-    this.bot = new TelegramBot(token, { polling: true })
+    this.bot = new TelegramBot(TOKEN, { polling: true })
   }
 
   initialize() {
