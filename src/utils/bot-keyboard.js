@@ -1,3 +1,4 @@
+const botTexts = require('./bot-texts')
 const { Profile, NewAdSend, Settings, RequestPhoneNumber } = require('./bot-texts')
 
 module.exports = {
@@ -120,6 +121,34 @@ module.exports = {
           },
           {
             text: "Epica"
+          }
+        ]
+      ],
+      resize_keyboard: true
+    },
+    parse_mode: 'HTML'
+  },
+  ProfileKeyboard: {
+    reply_markup: {
+      keyboard: [
+        [
+          {
+            text: botTexts.ProfileEditFullName
+          }
+        ],
+        [
+          {
+            text: botTexts.ProfileEditAddPhoneNumber
+          }
+        ],
+        [
+          {
+            text: botTexts.ProfileEditRegion
+          }
+        ],
+        [
+          {
+            text: botTexts.ProfileEditDistrict
           }
         ]
       ],

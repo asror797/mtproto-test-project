@@ -55,13 +55,14 @@ class Bot {
 
     const userStep = await this.#stepService.getStep(user_telegram_id)
     const data = await this.#driverService.checkDriver(user_telegram_id)
-    console.log(data)
+    console.log(data, userStep)
 
     if (user_command === '/start') {
       if (!data.is_exist) {
         await this.#stepService.editStep(user_telegram_id, botSteps.registerDriverMenu)
         this.bot.sendMessage(user_telegram_id, botTexts.AskAuth, botKeyboard.RequestPhoneNumberKeyboard)
       } else {
+        await this.#stepService.editStep(user_telegram_id, botSteps.mainMenu)
         this.bot.sendMessage(user_telegram_id, botTexts.Profile, botKeyboard.MainMenuKeyboard)
       }
     } else {
@@ -83,7 +84,22 @@ class Bot {
       } else {
 
         if(userStep === botSteps.mainMenu) {
+          if (user_command == botTexts.Settings) {
+            await this.#stepService.editStep(user_telegram_id, botSteps.profileEdit)
+            this.bot.sendMessage(user_telegram_id, botTexts.Settings, botKeyboard.ProfileKeyboard)
+          }
+        }
 
+        if (userStep === botSteps.profileEdit) {
+          if (user_command === botTexts.BackMenu) {
+            await this.#stepService.editStep(user_telegram_id, botSteps.mainMenu)
+            this.bot.sendMessage(user_telegram_id, botTexts.MainMenu, botKeyboard.MainMenuKeyboard)
+          }
+
+          if (user_command === botTexts.ProfileEditFullName) {
+            await this.#stepService.editStep(user_telegram_id, botSteps.enterFullName)
+            this.bot.sendMessage(user_telegram_id, botTexts.EnterFullName, botKeyboard.CleanKeyboard)
+          }
         }
 
         if(userStep === botSteps.enterFullName) {

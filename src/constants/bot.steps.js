@@ -8,4 +8,5 @@ module.exports = {
   enterRegion: 'enter-region',
   enterDistrict: 'enter-district',
   enterAuto: 'enter-auto',
+  profileEdit: 'profile-edit'
 }
