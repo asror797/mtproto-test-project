@@ -10,6 +10,10 @@ class DistrictService {
   districtRetrieveOne(name) {
     return this.districts.find((e) => e.name_oz == name)
   }
+
+  districtRetrieveById(district_id) {
+    return this.districts.find((e) => e.id == district_id) || ""
+  }
 }
 
 module.exports = DistrictService

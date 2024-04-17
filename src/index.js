@@ -55,74 +55,93 @@ class Bot {
 
     const userStep = await this.#stepService.getStep(user_telegram_id)
     const data = await this.#driverService.checkDriver(user_telegram_id)
+    console.log(data)
 
-    if (user_contact && userStep === botSteps.registerDriverMenu && !data.is_exist) {
-      await this.#driverService.driverCreate({
-        first_name: msg.chat.first_name,
-        last_name: msg.chat.last_name ? msg.chat.last_name : '',
-        telegram_id: user_telegram_id,
-        phone_number: user_contact.phone_number
-      })
-
-      await this.#stepService.editStep(user_telegram_id, botSteps.enterFullName)
-      this.bot.sendMessage(user_telegram_id, botTexts.EnterFullName, botKeyboard.CleanKeyboard)
-    }
-
-    if (!data.is_exist && !userStep) {
-      await this.#stepService.editStep(user_telegram_id, botSteps.registerDriverMenu)
-      this.bot.sendMessage(user_telegram_id, botTexts.AskAuth, botKeyboard.RequestPhoneNumberKeyboard)
-    } else {
-
-      if(userStep === botSteps.mainMenu) {
-
-      }
-
-      if(userStep === botSteps.enterFullName) {
-        await this.#driverService.driverUpdate({
-          telegram_id: user_telegram_id,
-          fullname: user_command
-        })
-
-        await this.#stepService.editStep(user_telegram_id, botSteps.enterRegion)
-        this.bot.sendMessage(user_telegram_id, botTexts.AskRegion, await this.#regionKeyboardMaker())
-      }
-
-      if(userStep === botSteps.enterRegion) {
-        const region = await this.#regionService.regionRetrieveOne(user_command)
-        console.log(region)
-        await this.#driverService.driverUpdate({
-          telegram_id: user_telegram_id,
-          region: region.id
-        })
-
-        await this.#stepService.editStep(user_telegram_id, botSteps.enterDistrict)
-        this.bot.sendMessage(user_telegram_id, botTexts.AskDistrict, await this.#districtKeyboardMaker(region.id))
-      }
-
-      if(userStep === botSteps.enterDistrict) {
-        const district = await this.#districtService.districtRetrieveOne(user_command)
-        await this.#driverService.driverUpdate({
-          telegram_id: user_telegram_id,
-          district: district ? district.id : 0
-        })
-
-        await this.#stepService.editStep(user_telegram_id, botSteps.enterAuto)
-        this.bot.sendMessage(user_telegram_id, botTexts.AskAuto, botKeyboard.AutoKeyboard)
-      }
-
-      if(userStep === botSteps.enterAuto) {
-        await this.#driverService.driverUpdate({
-          telegram_id: user_telegram_id,
-          auto: user_command
-        })
-
-        await this.#stepService.editStep(user_telegram_id, botSteps.mainMenu)
+    if (user_command === '/start') {
+      if (!data.is_exist) {
+        await this.#stepService.editStep(user_telegram_id, botSteps.registerDriverMenu)
+        this.bot.sendMessage(user_telegram_id, botTexts.AskAuth, botKeyboard.RequestPhoneNumberKeyboard)
+      } else {
         this.bot.sendMessage(user_telegram_id, botTexts.Profile, botKeyboard.MainMenuKeyboard)
       }
+    } else {
+      if (user_contact && userStep === botSteps.registerDriverMenu && !data.is_exist) {
+        await this.#driverService.driverCreate({
+          first_name: msg.chat.first_name,
+          last_name: msg.chat.last_name ? msg.chat.last_name : '',
+          telegram_id: user_telegram_id,
+          phone_number: user_contact.phone_number
+        })
 
-      if(userStep === botSteps.mainMenu) {
-        if (user_command === botTexts.Profile) {
-          this.bot.sendMessage(user_telegram_id,`<b>Driver</b>: ${data.driver.fullname}\n<b>Automobil</b>:${data.driver.auto}\n<b>Phone</b>:${data.driver.phone_number}`, { parse_mode: 'HTML'})
+        await this.#stepService.editStep(user_telegram_id, botSteps.enterFullName)
+        this.bot.sendMessage(user_telegram_id, botTexts.EnterFullName, botKeyboard.CleanKeyboard)
+      }
+
+      if (!data.is_exist && !userStep) {
+        await this.#stepService.editStep(user_telegram_id, botSteps.registerDriverMenu)
+        this.bot.sendMessage(user_telegram_id, botTexts.AskAuth, botKeyboard.RequestPhoneNumberKeyboard)
+      } else {
+
+        if(userStep === botSteps.mainMenu) {
+
+        }
+
+        if(userStep === botSteps.enterFullName) {
+          await this.#driverService.driverUpdate({
+            telegram_id: user_telegram_id,
+            fullname: user_command
+          })
+
+          await this.#stepService.editStep(user_telegram_id, botSteps.enterRegion)
+          this.bot.sendMessage(user_telegram_id, botTexts.AskRegion, await this.#regionKeyboardMaker())
+        }
+
+        if(userStep === botSteps.enterRegion) {
+          this.textLengthChecker(user_command)
+          const region = this.#regionService.regionRetrieveOne(user_command)
+          if (region) {
+            await this.#driverService.driverUpdate({
+              telegram_id: user_telegram_id,
+              region: region.id
+            })
+    
+            await this.#stepService.editStep(user_telegram_id, botSteps.enterDistrict)
+            this.bot.sendMessage(user_telegram_id, botTexts.AskDistrict, await this.#districtKeyboardMaker(region.id))
+          } else {
+            this.bot.sendMessage(user_telegram_id, 'Iltimos foydalangin')
+          }
+        }
+
+        if(userStep === botSteps.enterDistrict) {
+          this.textLengthChecker(user_command)
+          const district = this.#districtService.districtRetrieveOne(user_command)
+          if (district) {
+            await this.#driverService.driverUpdate({
+              telegram_id: user_telegram_id,
+              district: district ? district.id : 0
+            })
+            await this.#stepService.editStep(user_telegram_id, botSteps.enterAuto)
+            this.bot.sendMessage(user_telegram_id, botTexts.AskAuto, botKeyboard.AutoKeyboard)
+          } else {
+            this.bot.sendMessage(user_telegram_id,'Iltimos pastdagi tugmadan foydalan')
+          }
+        }
+
+        if(userStep === botSteps.enterAuto) {
+          this.textLengthChecker(user_command)
+          await this.#driverService.driverUpdate({
+            telegram_id: user_telegram_id,
+            auto: user_command
+          })
+
+          await this.#stepService.editStep(user_telegram_id, botSteps.mainMenu)
+          this.bot.sendMessage(user_telegram_id, botTexts.Profile, botKeyboard.MainMenuKeyboard)
+        }
+
+        if(userStep === botSteps.mainMenu) {
+          if (user_command === botTexts.Profile) {
+            this.bot.sendMessage(user_telegram_id,`<b>Ҳайдовчи: </b>${data.driver.fullname}\n<b>Автомобил: </b>${data.driver.auto}\n<b>Телефон рақам: </b>${data.driver.phone_number}\n<b>Вилоят: </b>${data.driver.region.name_oz}\n<b>Туман: </b>${data.driver.district.name_oz}`, { parse_mode: 'HTML'})
+          }
         }
       }
     }
@@ -193,6 +212,13 @@ class Bot {
       parse_mode: 'HTML'
     }
     
+  }
+
+
+  textLengthChecker(text) {
+    if (text.length > 40) {
+      throw new Error("Too long text")
+    }
   }
 }
 

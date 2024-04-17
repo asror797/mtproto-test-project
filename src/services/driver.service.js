@@ -1,7 +1,11 @@
 const drivers = require('../models/driver.model')
+const DistrictService = require('./district.service')
+const RegionService = require('./region.service')
 
 class DriverService {
   drivers = drivers
+  #regionService = new RegionService()
+  #districtService = new DistrictService()
 
   async driverRetrieveAll(payload) {
     const driverList = await this.drivers.find().select('-updatedAt').exec()
@@ -22,9 +26,24 @@ class DriverService {
       .select('-createdAt -updatedAt')
       .exec()
 
-    return {
-      driver,
-      is_exist: !!driver
+    if (driver) {
+      return {
+        is_exist: true,
+        driver: {
+          _id: driver['_id'],
+          fullname: driver.fullname,
+          phone_number: driver.phone_number,
+          telegram_id: driver.telegram_id,
+          auto: driver.auto,
+          district: this.#districtService.districtRetrieveById(driver.district),
+          region: this.#regionService.regionRetrieveById(driver.region)
+        }
+      }
+    } else {
+      return {
+        driver,
+        is_exist: false
+      }
     }
   }
 
