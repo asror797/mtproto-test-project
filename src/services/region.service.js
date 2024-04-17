@@ -5,11 +5,14 @@ class RegionService {
   regions = regions
 
   async regionRetrieveAll() {
-    return await this.regions.find().exec()
+    const districts =  await this.regions.find().exec()
+
+
+    return districts.map((e) => ({ id: e.id, name_uz: e.name_uz, name_oz: e.name_oz}))
   }
 
   async regionRetrieveOne(name) {
-    return  await this.regions.findOne().exec()
+    return  await this.regions.findOne({ region_id: name}).exec()
   }
 }
 

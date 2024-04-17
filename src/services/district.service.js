@@ -4,9 +4,9 @@ class DistrictService {
   districts = districts
 
   async districtRetrieveAll(region_id) {
-    return await this.districts.find({
-      region_id: region_id
-    }).exec()
+    const districts =  await this.districts.find().exec()
+
+    return districts.map((e) => ({ id: e.id, region_id: e.region_id, name_uz: e.name_uz, name_oz: e.name_oz }))
   }
 
   async districtRetrieveOne(name) {
