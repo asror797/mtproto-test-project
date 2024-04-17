@@ -1,17 +1,15 @@
-const regions = require("../models/region.model");
+const regions = require("../models/region.model")
+
 
 class RegionService {
   regions = regions
 
-  async regionRetrieveAll(payload) {
-
+  async regionRetrieveAll() {
     return await this.regions.find().exec()
   }
 
   async regionRetrieveOne(name) {
-    return await this.regions.findOne({
-      name_oz: name
-    }).exec()
+    return  await this.regions.findOne().exec()
   }
 }
 
