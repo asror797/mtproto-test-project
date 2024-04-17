@@ -1,18 +1,14 @@
-const districts = require("../models/district.model");
+const districts = require("./../utils/districts")
 
 class DistrictService {
   districts = districts
 
-  async districtRetrieveAll(region_id) {
-    const districts =  await this.districts.find().exec()
-
-    return districts.map((e) => ({ id: e.id, region_id: e.region_id, name_uz: e.name_uz, name_oz: e.name_oz }))
+  districtRetrieveAll(region_id) {
+    return this.districts.filter((e) => e.region_id == region_id)
   }
 
-  async districtRetrieveOne(name) {
-    return await this.districts.findOne({
-      name_oz: name
-    }).exec()
+  districtRetrieveOne(name) {
+    return this.districts.find((e) => e.name_oz == name)
   }
 }
 

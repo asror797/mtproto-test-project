@@ -55,7 +55,6 @@ class Bot {
 
     const userStep = await this.#stepService.getStep(user_telegram_id)
     const data = await this.#driverService.checkDriver(user_telegram_id)
-    console.log(userStep)
 
     if (user_contact && userStep === botSteps.registerDriverMenu && !data.is_exist) {
       await this.#driverService.driverCreate({
@@ -123,7 +122,6 @@ class Bot {
 
       if(userStep === botSteps.mainMenu) {
         if (user_command === botTexts.Profile) {
-          this.bot.forwardMessage()
           this.bot.sendMessage(user_telegram_id,`<b>Driver</b>: ${data.driver.fullname}\n<b>Automobil</b>:${data.driver.auto}\n<b>Phone</b>:${data.driver.phone_number}`, { parse_mode: 'HTML'})
         }
       }
@@ -171,12 +169,12 @@ class Bot {
   }
 
   async #districtKeyboardMaker(name) {
-    const regions = await this.#districtService.districtRetrieveAll(name)
+    const districts = this.#districtService.districtRetrieveAll(name)
 
     const KeyboardArray = []
     let keyboardLine = []
 
-    regions.map((e) => {
+    districts.map((e) => {
       if (keyboardLine.length == 2) {
         KeyboardArray.push(keyboardLine)
         keyboardLine = [ { text: e.name_oz } ]
