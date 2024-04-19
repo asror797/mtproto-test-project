@@ -87,6 +87,23 @@ class DriverService {
     }, updateObj)
   }
 
+  async driverLocationUpdate(payload) {
+    if (payload.type) {
+      await this.drivers.updateOne({ _id: payload.driver_id }, { $push: { locations: payload.location } } ).exec()
+    } else {
+      await this.drivers.updateOne({ _id: payload.driver_id }, { $pull: { locations: payload.location } } ).exec()
+    }
+  }
+
+  async driverContactsUpdate(payload) {
+    if (payload.type) {
+      await this.drivers.updateOne({ _id: payload.driver_id }, { $push: { contacts: payload.contact } } ).exec()
+    } else {
+      await this.drivers.updateOne({ _id: payload.driver_id }, { $pull: { contacts: payload.contact } } ).exec()
+    }
+
+  }
+
   async driverDelete(payload) {}
 }
 

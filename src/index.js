@@ -10,7 +10,8 @@ const {
   botSteps, 
   botKeyboard,
   botTexts 
-} = require('./utils')
+} = require('./utils');
+const botCallback = require('./constants/bot.callback');
 
 const { TOKEN } = process.env
 
@@ -33,14 +34,69 @@ class Bot {
 
   initialize() {
     this.bot.on('message', this.handleMessage.bind(this))
+    this.bot.on('callback_query', this.handleInlineChats.bind(this))
     this.bot.on('new_chat_members', this.handleMemberUpdateMessage.bind(this))
     this.bot.on('left_chat_member', this.handleMemberUpdateMessage.bind(this))
     this.bot.on('polling_error', (err) => { console.log(err) })
   }
 
 
+  async handleInlineChats(msg) {
+    if (msg.data == botCallback.ChangeDirectionCallBack) {
+      const trimmedText = msg.message.text.split('\n').filter(line => line.trim() !== '')
+      const newArr = []
+  
+      trimmedText.map((e,i) => {
+        if (i == 0) {
+          newArr.push(trimmedText[1])
+        } else if (i == 1) {
+          newArr.push(trimmedText[0])
+        } else {
+          newArr.push(e)
+        }
+      })
+      const callbackData = msg.data
+      const arrayText = msg.message.text.split('\n').filter(line => line.trim() !== '')
+  
+      this.bot.editMessageText(`${newArr.join('\n\n')}`, { 
+        inline_message_id: msg.id,
+        message_id: msg.message.message_id,
+        chat_id: msg.from.id,
+        reply_markup: {
+          inline_keyboard: msg.message.reply_markup.inline_keyboard
+        }
+      })
+    }
+
+    if (msg.data.split("_")[0] == botCallback.ChangeEmptySeat) {
+      console.log(msg.data.split("_")[1])
+      // this.bot.editMessageText('sas', {
+      //   inline_message_id: msg.id,
+      //   message_id: msg.message,message_id,
+      //   chat_id: msg.from.id,
+      //   reply_markup: { 
+      //     inline_keyboard: msg.message.reply_markup.inline_keyboard
+      //   }
+      // })
+    }
+
+    if (msg.data == botCallback.SelectDepartTime) {
+      console.log("ok")
+    }
+
+    if (msg.data == "forward") {
+      this.bot.editMessageReplyMarkup({ inline_keyboard: [] }, { 
+        inline_message_id: msg.id,
+        message_id: msg.message.message_id,
+        chat_id: msg.from.id
+      })
+    }
+  }
+
+
   async handleMessage(msg) {
     if (msg.chat.type === 'private') {
+      console.log(msg)
       await this.handlePrivateChat(msg)
     } else if (msg.chat.type === 'supergroup') {
       console.log(msg)
@@ -87,6 +143,98 @@ class Bot {
           if (user_command == botTexts.Settings) {
             await this.#stepService.editStep(user_telegram_id, botSteps.profileEdit)
             this.bot.sendMessage(user_telegram_id, botTexts.Settings, botKeyboard.ProfileKeyboard)
+          }
+
+          if (user_command == botTexts.NewAdSend) {
+            this.bot.sendMessage(user_telegram_id, this.newAdCreate(data.driver), { 
+              reply_markup: {
+                inline_keyboard: [
+                  [
+                    {
+                      text: "Йўналишини ўзгартириш 🔄",
+                      callback_data: botCallback.ChangeDirectionCallBack
+                    }
+                  ],
+                  [
+                    {
+                      text: "Одам Сони Тангланг ⬇️",
+                      callback_data: botCallback.SelectEmptySeat
+                    }
+                  ],
+                  [
+                    {
+                      text: "1",
+                      callback_data: botCallback.ChangeEmptySeatOne
+                    },
+                    {
+                      text: "2",
+                      callback_data: botCallback.ChangeEmptySeatTwo
+                    },
+                    {
+                      text: "3",
+                      callback_data: botCallback.ChangeEmptySeatThree
+                    },
+                    {
+                      text: "4 ✅",
+                      callback_data: botCallback.ChangeEmptySeatFour
+                    }
+                  ],
+                  [
+                    {
+                      text: "Faqat pochta olaman",
+                      callback_data: "empt"
+                    },
+                    {
+                      text: "Ayollar bor",
+                      callback_data: "game"
+                    }
+                  ],
+                  [
+                    {
+                      text: "Қачон Вақтни Танланг ⬇️",
+                      callback_data: botCallback.SelectDepartTime
+                    }
+                  ],
+                  [
+                    {
+                      text: "13:00 - 14:00",
+                      callback_data: "date"
+                    },
+                    {
+                      text: "14:00 - 15:00",
+                      callback_data: "date"
+                    }
+                  ],
+                  [
+                    {
+                      text: "15:00 - 16:00",
+                      callback_data: "date"
+                    },
+                    {
+                      text: "16:00 - 17:00",
+                      callback_data: "date"
+                    }
+                  ],
+                  [
+                    {
+                      text: "17:00 - 18:00",
+                      callback_data: "date"
+                    },
+                    {
+                      text: "18:00 - 19:00",
+                      callback_data: "date"
+                    }
+                  ],
+                  [
+                    {
+                      text: "Тайёр 👍 (Юбориш)",
+                      callback_data: "forward",
+                    }
+                  ]
+                ],
+              },
+              parse_mode: 'HTML'
+            })
           }
         }
 
@@ -156,7 +304,7 @@ class Bot {
 
         if(userStep === botSteps.mainMenu) {
           if (user_command === botTexts.Profile) {
-            this.bot.sendMessage(user_telegram_id,`<b>Ҳайдовчи: </b>${data.driver.fullname}\n<b>Автомобил: </b>${data.driver.auto}\n<b>Телефон рақам: </b>${data.driver.phone_number}\n<b>Вилоят: </b>${data.driver.region.name_oz}\n<b>Туман: </b>${data.driver.district.name_oz}`, { parse_mode: 'HTML'})
+            this.bot.sendMessage(user_telegram_id,`<b>Ҳайдовчи: </b>\n\n👮‍♂️ ${data.driver.fullname}\n\n<b>Автомобил: </b>\n\n🚖 ${data.driver.auto}\n\n<b>Телефон рақам: </b>\n\n📞 ${data.driver.phone_number}\n\n<b>Вилоят: </b>\n\n🌆 ${data.driver.region.name_oz}\n\n<b>Туман: </b>\n\n📍 ${data.driver.district.name_oz}\n\n<b>Қўшимча Туманлар: </b>\n${data.driver.locations ? data.driver.location : ""}`, { parse_mode: 'HTML'})
           }
         }
       }
@@ -228,6 +376,27 @@ class Bot {
       parse_mode: 'HTML'
     }
     
+  }
+
+  newAdCreate(data) {
+    const arrayText = []
+    const location = 'Toshkent'
+    arrayText.push(`◀️ <b>${data.region.name_oz.toUpperCase()}DAN</b>\n\n`)
+    arrayText.push(`▶️ <b>${location.toUpperCase()}GA</b>\n\n`)
+    // soat
+    arrayText.push(`⏰ <b>Hozir yuraman srochniy</b>\n\n`)
+ 
+    // odam soni 
+    arrayText.push(`👥 <b>3 ta odam kerak</b>\n\n`)
+
+    // pochta
+    arrayText.push(`📦 <b>Pochta Olaman</b>\n\n`)
+
+    // telefon raqami
+    arrayText.push(`🚖 Moshina: <b>${data.auto}</b>\n\n`)
+    arrayText.push(`📞 <b>${data.phone_number}</b>\n`)
+
+    return arrayText.join('')
   }
 
 

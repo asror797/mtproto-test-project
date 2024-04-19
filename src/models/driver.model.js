@@ -27,6 +27,14 @@ const driverSchema = new Schema(
       type: Number,
       default: 0
     },
+    contacts: {
+      type: [String],
+      default: []
+    },
+    locations: {
+      type: [String],
+      default: []
+    }
   },
   {
     versionKey: false,
